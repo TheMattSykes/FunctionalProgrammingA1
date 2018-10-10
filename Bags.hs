@@ -8,10 +8,11 @@ module Bags where
   
   -- listToBag Function
   listToBag :: Ord a => [a] -> Bag a
+  listToBag [x] = [(x,1)]
   listToBag list
-    | length xs == 1 = []
-    | otherwise = map ()
-    where (x:xs) = list
+    | x /= xs = [(x,1)]
+    | otherwise = [(x, 1)] ++ listToBag xss
+    where (x:xs:xss) = list
     
   -- zip list of compressed elements with counts
   
