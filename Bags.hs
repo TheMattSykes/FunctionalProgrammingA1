@@ -99,3 +99,4 @@ module Bags where
     | otherwise = intersect (reduceBag bag1 []) (reduceBag bag2 [])
     where (x:xs) = bag1 -- prevents pattern error on pass of []
           (y:ys) = bag2
+          
