@@ -10,14 +10,13 @@ module Bags where
   -- listToBag Function
   listToBag :: Ord a => [a] -> Bag a
   listToBag [] = error "Empty list"
-  listToBag list = bagConverter list [] 1
+  listToBag list = bagConverter list []
   
-  bagConverter :: Ord a => [a] -> Bag a -> Int -> Bag a
-  bagConverter list bag count
-    | (not (null xs)) && (x /= head xs) && (length (x:xs) >= 1) = bagConverter xs (bag ++ [(x,count)]) 1
-    | length list == 1 = bag ++ [(x,count)]
-    | otherwise = bagConverter xs bag (count + 1)
-    where (x:xs) = sort list
+  bagConverter :: Ord a => [a] -> Bag a -> Bag a
+  bagConverter list newBag
+    | length list == 1 = bagInsert newBag x
+    | otherwise = bagConverter xs ( bagInsert newBag x )
+    where (x:xs) = list
   
   
   
@@ -35,47 +34,26 @@ module Bags where
   
   -- bagInsert Function
   bagInsert :: Ord a => Bag a -> a -> Bag a
-  bagInsert [] _ = error "Bag is empty"
-  bagInsert bag newItem = inserter bag newItem [] False
+  bagInsert [] newItem = [(newItem,1)]
+  bagInsert bag newItem = inserter bag newItem 1 [] False
   
-  inserter :: Ord a => Bag a -> a -> Bag a -> Bool -> Bag a
-  inserter bag newItem newList found
+  inserter :: Ord a => Bag a -> a -> Int -> Bag a -> Bool -> Bag a
+  inserter bag newItem numberOfItem newList found
     | (length bag == 0) && found = newList
-    | (length bag == 0) && not found = newList ++ [(newItem,1)]
-    | newItem == fst (x) = inserter (xs) newItem (newList ++ [(newItem, (snd (x))+1)]) True -- If item exists then add 1 to snd part
-    | otherwise = inserter xs newItem (newList ++ [x]) found
+    | (length bag == 0) && not found = newList ++ [(newItem,numberOfItem)]
+    | newItem == fst (x) = inserter (xs) newItem numberOfItem (newList ++ [(newItem, (snd (x))+numberOfItem)]) True -- If item exists then add 1 to snd part
+    | otherwise = inserter xs newItem numberOfItem (newList ++ [x]) found
     where (x:xs) = bag
   
   
   
-  
-  bagSum :: Ord a => Bag a -> Bag a -> Bag a -> Bag a
-  bagSum [] [] newBag = newBag
-  bagSum bag1 bag2 newBag
-    | (fst x) == (fst y) = bagSum xs ys (newBag ++ [(fst x,(snd x + snd y))])
-    | otherwise = bagSum xs ys (newBag ++ [(fst x,snd x)] ++ [(fst y,snd y)])
-    where (x:xs) = bag1
-          (y:ys) = bag2
-  
-  -- bagSum Function
-  -- bagSum :: Ord a => Bag a -> Int
-  -- bagSum [] = 0
-  -- bagSum bag
-  --   | length bag == 1 = snd x -- return second part of tuple, base case
-  --   | length bag >= 1 = snd x + bagSum xs -- add second part of tuple to recursive call result
-  --   | otherwise = 0
-  --   where (x:xs) = bag -- prevents pattern error on pass of [], split the list into head and tail
+  bagSum :: Ord a => Bag a -> Bag a -> Bag a
+  bagSum [] [] = []
+  bagSum bag1 bag2
+    | length bag2 == 1 = inserter bag1 (fst x) (snd x) [] False
+    | otherwise = bagSum (inserter bag1 (fst x) (snd x) [] False) xs
+    where (x:xs) = bag2
     
-  
-  
-  -- bagIntersection Function
-  -- bagIntersection :: Ord a => Bag a -> Bag a -> Int
-  -- bagIntersection [] [] = error "Bags are empty"
-  -- bagIntersection bag1 bag2
-  --   | bagEqual bag1 bag2 = min (bagSum bag1) (bagSum bag2) -- Checks if equal then returns lowest sum of bag items
-  --   | otherwise = error "Bags not equal"
-  --   where (x:xs) = bag1 -- prevents pattern error on pass of []
-  --         (y:ys) = bag2
           
           
   reduceBag :: Ord a => Bag a -> [a] -> [a]
@@ -83,15 +61,6 @@ module Bags where
     | length bag == 0 = newList
     | otherwise = reduceBag xs (newList ++ [fst x])
     where (x:xs) = bag
-    
-    
-  -- bagOfIntersects :: Ord a => Bag a -> [a] -> Bag a -> Bag a
-  -- bagOfIntersects bag intersectList newBag
-  --   | length x == 0 = newBag
-  --   | fst x == (inspectList y) = bagOfIntersects xs intersectList (newBag ++ [y])
-  --   | otherwise = bagOfIntersects xs intersectList newBag
-  --   where (x:xs) = bag
-  --         (y:ys) = intersectList
     
   
   intersectChecker :: Ord a => Bag a -> Bag a -> [a] -> [a] -> [a]
