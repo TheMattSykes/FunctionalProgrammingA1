@@ -1,7 +1,5 @@
 module Bags where
   
-  import Data.List
-  
   -- Polymorphic Datatype for Bag
   type Bag a = [(a,Int)]
   
@@ -39,8 +37,7 @@ module Bags where
   
   inserter :: Ord a => Bag a -> a -> Int -> Bag a -> Bool -> Bag a
   inserter bag newItem numberOfItem newList found
-    | (length bag == 0) && found = newList
-    | (length bag == 0) && not found = newList ++ [(newItem,numberOfItem)]
+    | (length bag == 0) = if found then newList else newList ++ [(newItem,numberOfItem)]
     | newItem == fst (x) = inserter (xs) newItem numberOfItem (newList ++ [(newItem, (snd (x))+numberOfItem)]) True -- If item exists then add 1 to snd part
     | otherwise = inserter xs newItem numberOfItem (newList ++ [x]) found
     where (x:xs) = bag
@@ -53,19 +50,30 @@ module Bags where
     | length bag2 == 1 = inserter bag1 (fst x) (snd x) [] False
     | otherwise = bagSum (inserter bag1 (fst x) (snd x) [] False) xs
     where (x:xs) = bag2
+  
+  
+  
+  bagIntersection :: Ord a => Bag a -> Bag a -> Bag a
+  bagIntersection [] [] = error "Bags are empty"
+  bagIntersection bag1 bag2 = intersectionA bag1 bag2 []
+  
+  intersectionA :: Ord a => Bag a -> Bag a -> Bag a -> Bag a
+  intersectionA bag1 bag2 intersectBag
+    | length bag1 == 0 = intersectBag -- End of bag, base case
+    | (fst x) `elem` (reduceBag bag2 []) = intersectionA xs bag2 (intersectBag ++ [(fst x, min (snd x) (findItemAmount bag2 (fst x)))])
+    | otherwise = intersectionA xs bag2 intersectBag
+    where (x:xs) = bag1
     
-          
-          
+  findItemAmount :: Ord a => Bag a -> a -> Int
+  findItemAmount bag itemToFind
+    | length bag == 0 = error "Item not found"
+    | fst x == itemToFind = snd x
+    | otherwise = findItemAmount xs itemToFind
+    where (x:xs) = bag
+  
   reduceBag :: Ord a => Bag a -> [a] -> [a]
   reduceBag bag newList
     | length bag == 0 = newList
     | otherwise = reduceBag xs (newList ++ [fst x])
     where (x:xs) = bag
-    
-  
-  intersectChecker :: Ord a => Bag a -> Bag a -> [a] -> [a] -> [a]
-  intersectChecker bag1 bag2 intersectList newList
-    | otherwise = intersect (reduceBag bag1 []) (reduceBag bag2 [])
-    where (x:xs) = bag1 -- prevents pattern error on pass of []
-          (y:ys) = bag2
           
